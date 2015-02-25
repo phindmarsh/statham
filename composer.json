@@ -1,0 +1,17 @@
+{
+  "name": "phindmarsh/statham",
+  "description": "A JSON Schema validator",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Patrick Hindmarsh",
+      "email": "patrick@hindmar.sh"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Statham\\": "src/"
+    }
+  }
+}
