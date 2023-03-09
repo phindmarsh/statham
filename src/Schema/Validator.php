@@ -92,7 +92,7 @@ class Validator {
     }
 
     public function isValidRegex(Report $report, $schema, $key){
-        if(preg_match(Utils::regex($schema->$key), null) === false){
+        if(preg_match(Utils::regex($schema->$key), "") === false){
             $report->addError('KEYWORD_PATTERN', [$key, Utils::regex($schema->$key)]);
         }
     }
@@ -154,7 +154,7 @@ class Validator {
         $report->pathPush($key);
         foreach($schema->$key as $i => $value){
 
-            if(preg_match(Utils::regex($i), null) === false){
+            if(preg_match(Utils::regex($i), "") === false){
                 $report->addError('KEYWORD_PATTERN', [$key, Utils::regex($i)]);
             }
 
