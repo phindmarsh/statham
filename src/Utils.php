@@ -21,7 +21,7 @@ class Utils {
             case "double":
             case "integer":
                 if(is_finite($what)){
-                    return $what % 1 === 0 ? "integer" : "number";
+                    return fmod($what, 1) === 0.0 ? "integer" : "number";
                 }
                 if(is_nan($what)){
                     return "not-a-number";
