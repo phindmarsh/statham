@@ -45,6 +45,8 @@ class Validator {
         'default' => []
     ];
 
+    private Statham $statham;
+
     public function __construct(Statham $statham){
         $this->statham = $statham;
     }
@@ -186,35 +188,35 @@ class Validator {
     }
 
     public function isDependencies(Report $report, $schema, $key){
-        if(!is_object($schema)){
+        if(!isset($schema->$key) || !is_object($schema->$key)){
             $report->addError('KEYWORD_TYPE_EXPECTED', [$key, 'object']);
+            return;
         }
-        else {
-            foreach($schema->$key as $schemaKey => $schemaDependency){
 
-                if(is_object($schemaDependency)){
-                    $report->pathPush($key);
-                    $report->pathPush($schemaKey);
-                    $this->validateSchema($report, $schemaDependency);
-                    $report->pathPop();
-                    $report->pathPop();
+        foreach($schema->$key as $schemaKey => $schemaDependency){
+
+            if(is_object($schemaDependency)){
+                $report->pathPush($key);
+                $report->pathPush($schemaKey);
+                $this->validateSchema($report, $schemaDependency);
+                $report->pathPop();
+                $report->pathPop();
+            }
+            else if(is_array($schemaDependency)){
+                if(empty($schemaDependency)){
+                    $report->addError('KEYWORD_MUST_BE', [$key, 'not empty array']);
                 }
-                else if(is_array($schemaDependency)){
-                    if(empty($schemaDependency)){
-                        $report->addError('KEYWORD_MUST_BE', [$key, 'not empty array']);
-                    }
-                    foreach($schemaDependency as $i => $value){
-                        if(!is_string($value)){
-                            $report->addError('KEYWORD_VALUE_TYPE', [$key, 'string']);
-                        }
-                    }
-                    if(0 !== count(array_diff($schemaDependency, array_unique($schemaDependency)))){
-                        $report->addError('KEYWORD_MUST_BE', [$key, 'an array with unique items']);
+                foreach($schemaDependency as $i => $value){
+                    if(!is_string($value)){
+                        $report->addError('KEYWORD_VALUE_TYPE', [$key, 'string']);
                     }
                 }
-                else {
-                    $report->addError('KEYWORD_VALUE_TYPE', [$key, 'object or array']);
+                if(0 !== count(array_diff($schemaDependency, array_unique($schemaDependency)))){
+                    $report->addError('KEYWORD_MUST_BE', [$key, 'an array with unique items']);
                 }
+            }
+            else {
+                $report->addError('KEYWORD_VALUE_TYPE', [$key, 'object or array']);
             }
         }
     }
@@ -319,7 +321,8 @@ class Validator {
         if(isset($schema->$validated))
             return true;
 
-        $hasParentSchema = isset($schema->{'$schema'}) && $schema->id !== $schema->{'$schema'};
+        $schemaId = property_exists($schema, 'id') ? $schema->id : null;
+        $hasParentSchema = isset($schema->{'$schema'}) && $schemaId !== $schema->{'$schema'};
         if($hasParentSchema){
             if(isset($schema->$schemaResolved) && $schema->$schemaResolved !== $schema){
                 $subReport = new Report($report);
@@ -339,8 +342,9 @@ class Validator {
         //if($statham->options['noTypeless']){
         //}
 
-        if(!is_array($schema) && !is_object($schema)){
-            var_dump($schema);
+        if(!is_object($schema)){
+            $report->addError('SCHEMA_NOT_AN_OBJECT', [gettype($schema)], null, $schema);
+            return false;
         }
 
         foreach($schema as $key => $value){

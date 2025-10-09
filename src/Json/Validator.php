@@ -10,8 +10,8 @@ use Statham\Utils;
 
 class Validator {
 
-    private $rootSchema;
-    private $statham;
+    private ?object $rootSchema = null;
+    private Statham $statham;
 
     public function __construct(Statham $statham) {
         $this->statham = $statham;
@@ -21,7 +21,7 @@ class Validator {
         if(!is_numeric($json))
             return;
 
-        if($json % $schema->multipleOf !== 0){
+        if(!Utils::isMultipleOf($json, $schema->multipleOf)){
             $report->addError('MULTIPLE_OF', [$json, $schema->multipleOf], null, $schema);
         }
     }
@@ -214,6 +214,10 @@ class Validator {
         if(!is_object($json))
             return;
 
+        if(!isset($schema->dependencies) || !is_iterable($schema->dependencies)){
+            return;
+        }
+
         foreach($schema->dependencies as $depencencyName => $depencencyDefinition){
             if(isset($json->$depencencyName)) {
                 if(is_object($depencencyDefinition)){
@@ -309,6 +313,7 @@ class Validator {
 
         if(!is_object($schema)){
             $report->addError('SCHEMA_NOT_AN_OBJECT', [gettype($schema)], null, $schema);
+            return false;
         }
 
         // anything is valid against an empty schema
@@ -317,7 +322,7 @@ class Validator {
         }
 
         $isRoot = false;
-        if(!isset($this->rootSchema)){
+        if($this->rootSchema === null){
             $this->rootSchema = $schema;
             $isRoot = true;
         }
@@ -369,7 +374,7 @@ class Validator {
         }
 
         if($isRoot){
-            unset($this->rootSchema);
+            $this->rootSchema = null;
         }
 
         return $report->isValid();
@@ -414,8 +419,12 @@ class Validator {
         if($additionalProperties === true)
             $additionalProperties = new \stdClass();
 
-        $properties = isset($schema->properties) ? $schema->properties : new \stdClass();
-        $patternProperties = isset($schema->patternProperties) ? $schema->patternProperties : new \stdClass();
+        if(!is_object($additionalProperties) && $additionalProperties !== false){
+            $additionalProperties = new \stdClass();
+        }
+
+        $properties = (isset($schema->properties) && is_object($schema->properties)) ? $schema->properties : new \stdClass();
+        $patternProperties = (isset($schema->patternProperties) && is_object($schema->patternProperties)) ? $schema->patternProperties : new \stdClass();
 
         foreach($json as $m => $propertyValue){
 
