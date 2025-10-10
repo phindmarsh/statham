@@ -9,11 +9,11 @@ use Statham\Statham;
 class Cache {
 
     /** @var Statham  */
-    private $statham;
+    private Statham $statham;
     /** @var array */
-    private $cache = [];
+    private array $cache = [];
     /** @var array */
-    private $referenceCache = [];
+    private array $referenceCache = [];
 
     public function __construct(Statham $statham){
         $this->statham = $statham;
@@ -116,17 +116,21 @@ class Cache {
 
     private function findId($schema, $id){
 
+        if(!is_object($schema)){
+            return null;
+        }
+
         if(!$id)
             return $schema;
 
-        if(isset($schema->id)){
-            if($schema->id === $id || $schema->id[0] === '#' && substr($schema->id, 1) === $id){
+        if(isset($schema->id) && is_string($schema->id)){
+            if($schema->id === $id || str_starts_with($schema->id, '#' . $id)){
                 return $schema;
             }
         }
 
-        $keys = get_object_vars($schema);
-        for($i = count($keys); $i >= 0; $i--){
+        $keys = array_keys(get_object_vars($schema));
+        for($i = count($keys) - 1; $i >= 0; $i--){
             $k = $keys[$i];
             if(strpos($k, '__$') !== false)
                 continue;

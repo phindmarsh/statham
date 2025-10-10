@@ -10,7 +10,7 @@ use Statham\Utils;
 
 class Compiler {
 
-    protected $statham;
+    protected Statham $statham;
 
     public function __construct(Statham $statham){
         $this->statham = $statham;

@@ -21,11 +21,21 @@ class Utils {
             case "double":
             case "integer":
                 if(is_finite($what)){
-                    return fmod($what, 1) == 0 ? "integer" : "number";
+                    if(is_int($what)){
+                        return "integer";
+                    }
+
+                    if(self::isMultipleOf($what, 1)){
+                        return "integer";
+                    }
+
+                    return "number";
                 }
+            
                 if(is_nan($what)){
                     return "not-a-number";
                 }
+            
                 return "unknown-number";
             case "NULL":
                 return "null";
@@ -57,6 +67,35 @@ class Utils {
     public static function arrayIsUnique(array $array){
         $diffed = self::diff($array, array_unique($array, SORT_REGULAR));
         return count($diffed) <= 0;
+    }
+
+    public static function isMultipleOf($value, $multiple, float $epsilon = 1e-12){
+        if(!is_numeric($value) || !is_numeric($multiple)){
+            return false;
+        }
+
+        $valueFloat = (float) $value;
+        $multipleFloat = (float) $multiple;
+
+        if($multipleFloat == 0.0){
+            return false;
+        }
+
+        if(is_int($value) && is_int($multiple)){
+            return $value % $multiple === 0;
+        }
+
+        $remainder = fmod($valueFloat, $multipleFloat);
+        if(is_nan($remainder)){
+            return false;
+        }
+
+        $remainder = abs($remainder);
+        $multipleFloat = abs($multipleFloat);
+
+        $tolerance = max(abs($valueFloat), $multipleFloat, 1.0) * $epsilon;
+
+        return $remainder <= $tolerance || abs($remainder - $multipleFloat) <= $tolerance;
     }
 
 }

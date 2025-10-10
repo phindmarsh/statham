@@ -12,7 +12,7 @@ class Report {
     public $errors = [];
     private $path = [];
 
-    public function __construct(Report $parent = null, array $options = []){
+    public function __construct(Report|null $parent, array $options = []){
 
         if($parent instanceof Report){
             $this->parent = $parent;

@@ -9,16 +9,17 @@ use Statham\Schema\Validator as SchemaValidator;
 
 class Statham {
 
-    public $options = array(
+    public array $options = array(
         // report error paths as an array of path segments to get to the offending node
         'reportPathsAsArray' => false,
         'ignoreUnresolvableReferences' => false
     );
 
-    /** @var Cache */
-    public $cache;
-    /** @var Report */
-    public $report;
+    public Cache $cache;
+    public Compiler $compiler;
+    public SchemaValidator $schemaValidator;
+    public JsonValidator $jsonValidator;
+    public ?Report $report = null;
 
     public function __construct(array $options = array()){
         $this->options = array_merge($this->options, $options);
