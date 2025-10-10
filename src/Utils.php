@@ -31,9 +31,11 @@ class Utils {
 
                     return "number";
                 }
+            
                 if(is_nan($what)){
                     return "not-a-number";
                 }
+            
                 return "unknown-number";
             case "NULL":
                 return "null";
